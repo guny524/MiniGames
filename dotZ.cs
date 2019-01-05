@@ -9,44 +9,49 @@ namespace DotZ
             Map map = new Map();
             Plane plane = new Plane('#');
             ConsoleKeyInfo key;
+            
             do
             {
                 int x = plane.GetX();
                 int y = plane.GetY();
+
                 plane.Visualize();
+
                 key = Console.ReadKey(true);
+
                 switch(key.Key)
-            {
-            case ConsoleKey.LeftArrow:
-                if(x==1)
-                    break;
-                x = x - 1;
-                break;
-            case ConsoleKey.RightArrow:
-                if(x==Map.X_MAX-1)
-                    break;
-                x = x + 1;
-                break;
-            case ConsoleKey.UpArrow:
-                if(y==1)
-                    break;
-                y = y - 1;
-                break;
-            case ConsoleKey.DownArrow:
-                if(y==Map.Y_MAX-1)
-                    break;
-                y = y + 1;
-                break;
-            case ConsoleKey.Q:
-                Console.Clear();
-                return;
-            case ConsoleKey.Z:
-                plane.Fire();
-                break;
-            }
-            plane.Erase();
-            plane.SetX(x);
-            plane.SetY(y);
+                {
+                    case ConsoleKey.LeftArrow:
+                        if(x==1)
+                            break;
+                        x = x - 1;
+                        break;
+                    case ConsoleKey.RightArrow:
+                        if(x==Map.X_MAX-1)
+                            break;
+                        x = x + 1;
+                        break;
+                    case ConsoleKey.UpArrow:
+                        if(y==1)
+                            break;
+                        y = y - 1;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        if(y==Map.Y_MAX-1)
+                            break;
+                        y = y + 1;
+                        break;
+                    case ConsoleKey.Q:
+                        Console.Clear();
+                        return;
+                    case ConsoleKey.Z:
+                        plane.Fire();
+                        break;
+                }
+                plane.Erase();
+
+                plane.SetX(x);
+                plane.SetY(y);
             } while (true);
         }
     }
@@ -54,10 +59,12 @@ namespace DotZ
     {
         public const int X_MAX = 79;
         public const int Y_MAX = 24;
+
         public Map()
         {
             this.Visualize();
         }
+
         public void Visualize()
         {
             Console.Clear();
@@ -73,13 +80,14 @@ namespace DotZ
     }
     class Plane
     {
-        int x=1;
-        int y=1;
+        int x=1, y=1;
         char c;
+
         public Plane(char c)
         {
             this.c = c;
         }
+
         public int GetX()
         {
             return x;

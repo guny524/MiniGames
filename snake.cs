@@ -80,7 +80,7 @@ namespace Snake
                 return;
             else
             {
-                list.Add(cdnt);
+                list.Add(cdnt); // list에서 중복될 수 있어서 검사 먼저함
                 preList = list;
                 Console.SetCursorPosition(2*cdnt.Col, cdnt.Row); // when print sqaure it takes double location // 네모 프린트하면 2칸 먹음 아예 좌표를 2배로 설정
                 Console.Write("ㅁ");
@@ -142,7 +142,7 @@ namespace Snake
         public bool IsCollide(Coordinate tmp) // Collide With Feed
         {
             if(this[0].Equals(tmp))
-            return true;
+                return true;
             return false;
         }
         public bool IsCrash() // Crash by itself
@@ -151,15 +151,15 @@ namespace Snake
                 return true;
             if(this.Count >= 2)
                 for(int i=1; i<this.Count; i++)
-            if(this[0].Equals(this[i]))
-                return true;
+                    if(this[0].Equals(this[i]))
+                        return true;
             return false;
         }
         public void Move(ConsoleKeyInfo cki)
         {
             Coordinate tmp = TmpMaker(cki);
             for(int i=this.Count-1; i>0; i--)
-            this[i] = this[i-1];
+                this[i] = this[i-1];
             this[0] = tmp;
         }
         public void Grow(ConsoleKeyInfo cki)
@@ -182,8 +182,8 @@ namespace Snake
             Random r = new Random();
             Coordinate cdnt = new Coordinate(r.Next(1,limit.Col-1), r.Next(1,limit.Row-1));
             foreach(Coordinate coordinate in avoid)
-            if(coordinate.Equals(cdnt))
-                cdnt = Generate(avoid);
+                if(coordinate.Equals(cdnt))
+                    cdnt = Generate(avoid);
             return cdnt;
         }
     }
@@ -215,7 +215,7 @@ namespace Snake
         {
             DelayLevel -= 1;
             if(DelayLevel < 0)
-            DelayLevel = 0;
+                DelayLevel = 0;
             DelayTime = DelayArr[DelayLevel];
         }
     }
@@ -227,7 +227,7 @@ namespace Snake
         {
             cki = Console.ReadKey();
             while(Console.KeyAvailable)
-            Console.ReadKey(false);
+                Console.ReadKey(false);
         }
         public bool HasValue()
         {

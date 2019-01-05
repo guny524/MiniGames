@@ -2,104 +2,136 @@ using System;
 
 namespace BaseBall
 {
-    class Math
+    class General
     {
-        static public int CalPower(int number, int power)
+        static public int CalPow(int numb, int pow)
         {
             int tmp = 1;
-            for(int i=0;i<power;i++)
-                tmp *= number;
+            for(int i=0;i<pow;i++)
+                tmp *= num;
             return tmp;
         }
-    }
-    class Player
-    {
-        public int Number{get;set;}
-
-        public int[] GetArr(int number)
+        static public void ResetLine()
         {
-            string str = number.ToString();
-            int length = str.Length;
-            int[] array = new int[length];
-            int divisor = Math.CalPower(10, length-1);
-            for(int i=0; i<length; i++)
-            {
-                array[i] = number/divisor;
-                number %= divisor;
-                divisor /= 10;
-            }
-            return array;
+            int CursorTmp = Console.CursorLeft;
+            for(int i=0; i<Console.WindowWidth-Console.CursorLeft; i++)
+                Console.Write(' ');
+            Console.CursorLeft = CursorTmp;
         }
-        public string GetScore(int guessNumber)
+    }
+    abstract class Player
+    {
+        public string Number;
+
+        public abstract string Input();
+        public abstract void SetNumber();
+        public abstract string GuessNumber(string guessResult);
+        public string CompareWith(string guess)
         {
-            int strike = 0, ball = 0;
-            int[] myArr = this.GetArr(this.Number);
-            int[] guessArr = this.GetArr(guessNumber);
+            int strike=0, ball=0;
             for(int i=0; i<4; i++)
-                if(myArr[i] == guessArr[i])
+                if(Number[i] == guess[i])
                     strike++;
             for(int i=0; i<4; i++)
             {
-                for(int j=0; j<4; j++)
+                for(int j=0; k<4 j++)
                 {
                     if(i==j)
                         continue;
-                    if(myArr[i] == guessArr[j])
+                    if(Number[i]==guess[j])
                         ball++;
                 }
             }
             return String.Format("{0}s {1}b", strike, ball);
         }
-        public bool IsCorrect(int guessNumber)
+        public bool Verify(string num)
         {
-            if(this.GetScore(guessNumber) == "4s 0b")
-                return true;
-            else
+            if(num.Length != 4)
                 return false;
-        }
-        public bool Verify(int num)
-        {
-            if(num<1000 || num>9999)
+            if(string.Compare(num, "1000")<0 || string.Compare("9999", num)<0)
                 return false;
-            int[] Arr = GetArr(num);
             for(int i=0; i<4; i++)
-                for(int j=i+1; j<4; j++)
-                    if(Arr[i]==Arr[j])
-                        return false;
+                if(num[i]==num[j])
+                    return false;
             return true;
         }
-        public void SetNumber()
+    }
+    class People : Player
+    {
+        public override string Input() // 입력받고 나서 실수 했을 때 원래 라인에 커서 위치 ResetLine 이용해서
         {
-            do
-            {
-                string input;
-                int CursorTmp = Console.CursorLeft;
-                for(int i=0; i<Console.WindowWidth-Console.CursorLeft; i++)
-                    Console.Write(' ');
-                Console.CursorLeft = CursorTmp;
-                input = Console.ReadLine();
-                this.Number = int.Parse(input);
-            } while (!this.Verify(this.Number));
+            string num;
+            General.ResetLine();
+            num = Console.ReadLine();
+            if(!Verify(num))
+                num = Input();
+            return num;
+        }
+        public override void SetNumber()
+        {
+            Number = Input();
+        }
+        public override string GuessNumber(string guessResult)
+        {
+            return Input();
         }
     }
     class Computer : Player
     {
-        new public void SetNumber()
+        Calculator cal;
+
+        public Computer()
         {
-            Random r = new Random();
-            this.Number = r.Next(999, 10000);
-            if(!this.Verify(this.Number))
-                this.SetNumber();
+            cal = new Calculator();
         }
-        public int GuessNumber()
+
+        public override string Input()
         {
+            string num;
             Random r = new Random();
-            int num;
-            do
-            {
-                num = r.Next(999, 10000);
-            } while (!this.Verify(num));
+            num = r.Next(999,10000).ToString();
+            if(!Verify(num))
+                num = Input();
             return num;
+        }
+        new override void SetNumber()
+        {
+            Number = Input();
+        }
+        public override string GuessNumber(string feedback)
+        {
+            return cal.Emit(feedback); // 이전 이밋의 결과를 피드백으로 주고 그 바탕으로 이밋
+        }
+    }
+    class Calculator
+    {
+        enum State {Raw, Used, True, Flase}
+        State[] state = new State[10];
+        Random r = new Random();
+        string preOutput;
+        string preFeedback;
+        bool firstFeed;
+
+        public string Init(string input)
+        {
+            for(int i=0; i<10; i++)
+                state[i] = State.Row;
+            preOutput = input;
+            firstFeed = true;
+            return preOutput;
+        }
+        public string Emit(string feedback)
+        {
+            if(firstFeed)
+            {
+                firstFeed = false;
+                //
+            }
+            else
+            {
+                preOutput[r.Next(-1,4)] = r.Next(-1,10);
+                preFeedback = feedback;
+            }
         }
     }
     class MainApp
@@ -134,15 +166,57 @@ namespace BaseBall
                 }
                 Console.Clear();
                 //---------------------------------------------
-                switch(gameMode)
+                Player player1 = new People();
+                Player player2;
+                if(gameMode == Gamemode.Computer)
+                    player2 = new Computer();
+                else
+                    player2 = new People();
+
+                Console.Write("player1: 4자리 숫자를 입력하시오: ");
+                player1.SetNumber();
+                Console.Clear();
+                Console.Write("player2: 4자리 숫자를 입력하시오: ");
+                player2.SetNumber();
+                Console.Clear();
+
+                int round = 1;
+                string inputNumber;
+                string result = " ";
+                while(true)
                 {
-                    case Gamemode.Computer:
-                        Computer();
+                    Console.WriteLine("{0}회 째 도전", round);
+                    Console.WriteLine();
+
+                    Console.Write("player1: 숫자를 추측하시오: ");
+                    inputNumber = player1.GuessNumber("");
+                    Console.WriteLine("player1: 추측한 결과: {0}", player2.CompareWith(inputNumber));
+                    if(string.Equals(player2.Number, inputNumber))
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Player1 Win");
                         break;
-                    case Gamemode.Player:
-                        Competition();
+                    }
+
+                    Console.CursorLeft += 4*8; // tab * 8
+                    Console.CursorTop -= 2; // Go up 2 lines
+                    Console.Write("player2: 숫자를 추측하시오: ");
+                    inputNumber = player2.GuessNumber(result);
+                    if(gameMode == Gamemode.Computer)
+                        Console.WriteLine(inputNumber);
+                    Console.CursorLeft += 4*8;
+                    result = player1.CompareWith(inputNumber);
+                    Console.WriteLine("player2: 추측한 결과: {0}", result);
+                    if(string.Equals(player1.Number, inputNumber))
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Player2 Win");
                         break;
+                    }
+                    round++;
                 }
+                Console.WriteLine("player1: {0}", player1.Number);
+                Console.WriteLine("player2: {0}", player2.Number);
                 //---------------------------------------------
                 Console.WriteLine("Q: Quit, R: Restart");
                 while(true)
@@ -158,100 +232,6 @@ namespace BaseBall
                 }
             }
             return;
-        }
-        static void Computer()
-        {
-            Player player = new Player();
-            Console.Write("4자리 숫자를 입력하시오: ");
-            player.SetNumber();
-
-            Computer computer = new Computer();
-            computer.SetNumber();
-            Console.WriteLine("컴퓨터가 숫자를 정했습니다.");
-
-            int round = 1;
-            while(true)
-            {
-                Console.WriteLine("{0}회 째 도전", round);
-                Console.WriteLine();
-
-                Player guess = new Player();
-                Console.Write("숫자를 추측하시오: ");
-                guess.SetNumber();
-                Console.WriteLine("내가 추측한 결과: {0}", computer.GetScore(guess.Number));
-                if(computer.IsCorrect(guess.Number))
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Player Win");
-                    break;
-                }
-
-                Console.CursorLeft += 8*4; // tab * 8
-                guess.Number = computer.GuessNumber();
-                Console.CursorTop -= 2; // Go up 2 lines
-                Console.WriteLine("컴퓨터 추측 숫자: {0}",guess.Number);
-                Console.CursorLeft += 8*4;
-                Console.Write("컴퓨터 추측 결과: ");
-                Console.WriteLine(player.GetScore(guess.Number));
-                Console.WriteLine();
-                if(player.IsCorrect(guess.Number))
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Computer Win");
-                    break;
-                }
-                round++;
-            }
-            Console.WriteLine("Player: {0}", player.Number);
-            Console.WriteLine("Computer: {0}", computer.Number);
-        }
-        static void Competition()
-        {
-            Player player1 = new Player();
-            Console.Write("player1: 4자리 숫자를 입력하시오: ");
-            player1.SetNumber();
-
-            Console.Clear();
-
-            Player player2 = new Player();
-            Console.Write("player2: 4자리 숫자를 입력하시오: ");
-            player2.SetNumber();
-
-            Console.Clear();
-
-            int round = 1;
-            while(true)
-            {
-                Console.WriteLine("{0}회 째 도전", round);
-                Console.WriteLine();
-
-                Player test = new Player();
-                Console.Write("Player1: 숫자를 추측 하시오: ");
-                test.SetNumber();
-                Console.WriteLine("Player1: 추측한 결과: {0}", player2.GetScore(test.Number));
-                if(player2.IsCorrect(test.Number))
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Player1 Win");
-                    break;
-                }
-
-                Console.CursorLeft += 8*4; // tab * 8
-                Console.CursorTop -= 2;
-                Console.Write("Player2: 숫자 추측 하시오: ");
-                test.SetNumber();
-                Console.CursorLeft += 8*4;
-                Console.WriteLine("Player2: 추측한 결과: {0}", player1.GetScore(test.Number));
-                if(player1.IsCorrect(test.Number))
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Player2 Win");
-                    break;
-                }
-                round++;
-            }
-            Console.WriteLine("Player1: {0}", player1.Number);
-            Console.WriteLine("Player2: {0}", player2.Number);
         }
     }
 }
